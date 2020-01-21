@@ -5,7 +5,6 @@
 #include "scene/scene.hpp"
 #include "context/cl_context.hpp"
 #include "utils/viewport.hpp"
-#include <Windows.h>
 #include <memory>
 #include <ctime>
 

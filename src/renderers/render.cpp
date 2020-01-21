@@ -165,9 +165,9 @@ void Render::Init(HWND hwnd)
     std::vector<cl::Device> platform_devices;
     all_platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &platform_devices);
 #ifdef BVH_INTERSECTION
-    m_RenderKernel = std::make_shared<CLKernel>("src/Kernels/kernel_bvh.cl", platform_devices);
+    m_RenderKernel = std::make_shared<CLKernel>("src/kernels/kernel_bvh.cl", platform_devices);
 #else
-    m_RenderKernel = std::make_shared<CLKernel>("src/Kernels/kernel_grid.cl", platform_devices);
+    m_RenderKernel = std::make_shared<CLKernel>("src/kernels/kernel_grid.cl", platform_devices);
 #endif
 
     SetupBuffers();

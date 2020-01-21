@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <limits>
 
 const float MATH_PI = 3.141592654f;
 const float MATH_2PI = 6.283185307f;
