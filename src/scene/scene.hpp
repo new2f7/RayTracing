@@ -3,7 +3,7 @@
 
 #include "mathlib/mathlib.hpp"
 #include "utils/shared_structs.hpp"
-#include <CL/cl.hpp>
+#include <CL/cl2.hpp>
 #include <algorithm>
 #include <vector>
 #include <map>

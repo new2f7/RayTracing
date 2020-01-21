@@ -2,7 +2,7 @@
 #define CL_CONTEXT_HPP
 
 #include "scene/scene.hpp"
-#include <CL/cl.hpp>
+#include <CL/cl2.hpp>
 #include <memory>
 
 // OpenCL & OpenGL interloperability
