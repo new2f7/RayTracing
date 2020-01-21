@@ -99,16 +99,16 @@ CLKernel::CLKernel(const char* filename, const std::vector<cl::Device>& devices)
     // std::istreambuf_iterator s should be wrapped by brackets (wat?)
     std::string source((std::istreambuf_iterator<char>(input_file)), (std::istreambuf_iterator<char>()));
 
-    cl::Program program(render->GetCLContext()->GetContext(), source);
+    m_Program = cl::Program(render->GetCLContext()->GetContext(), source);
 
-    cl_int errCode = program.build(devices, " -I . ");
+    cl_int errCode = m_Program.build(devices, " -I . ");
     if (errCode != CL_SUCCESS)
     {
-        throw CLException("Error building" + program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]), errCode);
+        throw CLException("Error building" + m_Program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]), errCode);
     }
-    std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
+    std::cout << m_Program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
 
-    m_Kernel = cl::Kernel(program, "KernelEntry", &errCode);
+    m_Kernel = cl::Kernel(m_Program, "KernelEntry", &errCode);
     if (errCode)
     {
         throw CLException("Failed to create kernel", errCode);
