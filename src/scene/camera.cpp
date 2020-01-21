@@ -1,7 +1,5 @@
 #include "camera.hpp"
 #include "renderers/render.hpp"
-#include "io/inputsystem.hpp"
-#include <Windows.h>
 #include <iostream>
 
 Camera::Camera(std::shared_ptr<Viewport> viewport)
@@ -16,7 +14,7 @@ Camera::Camera(std::shared_ptr<Viewport> viewport)
 {
 }
 
-void Camera::Update()
+/*void Camera::Update()
 {
     static POINT point = { 0, 0 };
     unsigned short x, y;
@@ -63,4 +61,4 @@ void Camera::Update()
     
     ++m_FrameCount;
 
-}
+}*/

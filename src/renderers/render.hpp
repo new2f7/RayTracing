@@ -13,11 +13,10 @@
 class Render
 {
 public:
-    void         Init(HWND hWnd);
+    void         Init();
     void         RenderFrame();
     void         Shutdown();
 
-    const HWND   GetHWND()           const;
     double       GetCurtime()        const;
     double       GetDeltaTime()      const;
     unsigned int GetGlobalWorkSize() const;
@@ -35,7 +34,6 @@ private:
     void FrameEnd();
     
 private:
-    HWND m_hWnd;
     // Timing
     double m_StartFrameTime;
     double m_PreviousFrameTime;

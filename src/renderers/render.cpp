@@ -1,6 +1,5 @@
 #include "render.hpp"
 #include "mathlib/mathlib.hpp"
-#include "io/inputsystem.hpp"
 #include "io/image_loader.hpp"
 #include "utils/cl_exception.hpp"
 #include <iostream>
@@ -11,100 +10,6 @@
 
 static Render g_Render;
 Render* render = &g_Render;
-
-/*
-GLuint ImageUtils::loadDDS(const char * filename)
-{
-    Logger::getInstance()->write(StringUtils::format("Loading DDS Image %s", filename));
-
-    unsigned char header[124];
-
-    FILE *fp;
-
-    fp = fopen(filename, "rb");
-    if (fp == NULL)
-    {
-        Logger::getInstance()->write("Failed to load Image: could not open the file");
-        return 0;
-    }
-
-    char filecode[4];
-    fread(filecode, 1, 4, fp);
-    if (strncmp(filecode, "DDS ", 4) != 0)
-    {
-        fclose(fp);
-        Logger::getInstance()->write("Failed to load Image: not a direct draw surface file");
-        return 0;
-    }
-
-    fread(&header, 124, 1, fp);
-
-    unsigned int height = *(unsigned int*)&(header[8]);
-    unsigned int width = *(unsigned int*)&(header[12]);
-    unsigned int linearSize = *(unsigned int*)&(header[16]);
-    unsigned int mipMapCount = *(unsigned int*)&(header[24]);
-    unsigned int fourCC = *(unsigned int*)&(header[80]);
-
-    unsigned char * buffer;
-    unsigned int bufsize;
-
-    bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize;
-    buffer = (unsigned char*)malloc(bufsize * sizeof(unsigned char));
-    fread(buffer, 1, bufsize, fp);
-
-    fclose(fp);
-
-    unsigned int components = (fourCC == FOURCC_DXT1) ? 3 : 4;
-    unsigned int format;
-    switch (fourCC)
-    {
-    case FOURCC_DXT1:
-        format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-        break;
-    case FOURCC_DXT3:
-        format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-        break;
-    case FOURCC_DXT5:
-        format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        break;
-    default:
-        free(buffer);
-        throw Exception("Failed to load Image: dds file format not supported (supported formats: DXT1, DXT3, DXT5)");
-        return 0;
-    }
-
-    // Create one OpenGL texture
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-
-    // "Bind" the newly created texture : all future texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    unsigned int blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
-    unsigned int offset = 0;
-
-    for (unsigned int level = 0; level < mipMapCount && (width || height); ++level)
-    {
-        unsigned int size = ((width + 3) / 4)*((height + 3) / 4)*blockSize;
-        glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,
-            0, size, buffer + offset);
-
-        offset += size;
-        width /= 2;
-        height /= 2;
-    }
-
-    free(buffer);
-
-    //Unbind the texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    Logger::getInstance()->write(StringUtils::format("Loaded DDS Image %s", filename));
-
-    return textureID;
-}
-*/
 
 void Render::InitGL()
 {
@@ -134,18 +39,11 @@ void Render::InitGL()
     }
 }
 
-void Render::Init(HWND hwnd)
+void Render::Init()
 {
-    m_hWnd = hwnd;
-    m_DisplayContext = GetDC(m_hWnd);
-    
     InitGL();
 
-    RECT hwndRect;
-    GetWindowRect(hwnd, &hwndRect);
-
-    unsigned int width = hwndRect.right - hwndRect.left, height = hwndRect.bottom - hwndRect.top;
-    m_Viewport = std::make_shared<Viewport>(0, 0, width, height);
+    m_Viewport = std::make_shared<Viewport>(0, 0, 1280, 720);
     m_Camera = std::make_shared<Camera>(m_Viewport);
 #ifdef BVH_INTERSECTION
     m_Scene = std::make_shared<BVHScene>("meshes/dragon.obj", 4);
@@ -207,11 +105,6 @@ void Render::SetupBuffers()
 
 }
 
-const HWND Render::GetHWND() const
-{
-    return m_hWnd;
-}
-
 double Render::GetCurtime() const
 {
     return (double)clock() / (double)CLOCKS_PER_SEC;
@@ -271,7 +164,7 @@ void Render::RenderFrame()
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    m_Camera->Update();
+    //m_Camera->Update();
 
     //if (m_Camera->GetFrameCount() > 64) return;
 

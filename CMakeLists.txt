@@ -8,12 +8,9 @@ set(CONTEXT_SOURCES
 )
 
 set(IO_SOURCES
-    src/io/dds_loader.cpp
     src/io/hdr_loader.cpp
     src/io/image_loader.hpp
-    src/io/inputsystem.cpp
-    src/io/inputsystem.hpp
-)
+    )
 
 set(KERNELS_SOURCES
     src/kernels/kernel_bvh.cl
