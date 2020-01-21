@@ -57,13 +57,13 @@ public:
     virtual void DrawDebug();
 
 private:
-    BVHBuildNode *BVHScene::RecursiveBuild(
+    BVHBuildNode* RecursiveBuild(
         std::vector<BVHPrimitiveInfo> &primitiveInfo,
         unsigned int start,
         unsigned int end, unsigned int *totalNodes,
         std::vector<Triangle> &orderedTriangles);
 
-    unsigned int BVHScene::FlattenBVHTree(BVHBuildNode *node, unsigned int *offset);
+    unsigned int FlattenBVHTree(BVHBuildNode *node, unsigned int *offset);
 
 private:
     std::vector<LinearBVHNode> m_Nodes;
