@@ -12,6 +12,7 @@ from http://www.flipcode.com/archives/HDR_Image_Reader.shtml
 #include <cmath>
 #include <memory>
 #include <cstdio>
+#include <cstring>
 
 typedef unsigned char RGBE[4];
 #define R			0
@@ -102,7 +103,7 @@ bool HDRLoader::Load(const char *fileName, Image &res)
 float ConvertComponent(int expo, int val)
 {
     float v = val / 256.0f;
-    float d = std::powf(2.0f, expo);
+    float d = powf(2.0f, expo);
     return v * d;
 }
 
