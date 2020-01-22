@@ -55,7 +55,7 @@ void Render::Init()
     cl::Platform::get(&all_platforms);
     if (all_platforms.empty())
     {
-        throw std::exception("No OpenCL platforms found");
+        throw std::runtime_error("No OpenCL platforms found");
     }
     
     m_CLContext = std::make_shared<CLContext>(all_platforms[0]);

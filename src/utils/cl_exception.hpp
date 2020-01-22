@@ -83,11 +83,11 @@ inline const char* GetClErrorString(int error)
 
 }
 
-class CLException : public std::exception
+class CLException : public std::runtime_error
 {
 public:
     CLException(const std::string& message, int errorCode)
-        : std::exception((message + " (" + GetClErrorString(errorCode) + ")").c_str()) {}
+        : std::runtime_error((message + " (" + GetClErrorString(errorCode) + ")").c_str()) {}
 
 };
 

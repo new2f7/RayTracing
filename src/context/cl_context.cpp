@@ -25,7 +25,7 @@ CLContext::CLContext(const cl::Platform& platform)
     platform.getDevices(CL_DEVICE_TYPE_ALL, &platform_devices);    
     if (platform_devices.empty())
     {
-        throw std::exception("No devices found!");
+        throw std::runtime_error("No devices found!");
     }
 
     for (unsigned int i = 0; i < platform_devices.size(); ++i)
@@ -93,7 +93,7 @@ CLKernel::CLKernel(const char* filename, const std::vector<cl::Device>& devices)
     std::ifstream input_file(filename);
     if (!input_file)
     {
-        throw std::exception("Failed to load kernel file!");
+        throw std::runtime_error("Failed to load kernel file!");
     }
     
     // std::istreambuf_iterator s should be wrapped by brackets (wat?)
