@@ -10,14 +10,15 @@ CLContext::CLContext(const cl::Platform& platform)
 {
     std::cout << "Platform: " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
 
+    //https://stackoverflow.com/questions/26802905/getting-opengl-buffers-using-opencl
     cl_context_properties props[] =
     {
         // OpenCL platform
         CL_CONTEXT_PLATFORM, (cl_context_properties)platform(),
         // OpenGL context
-        CL_GL_CONTEXT_KHR, (cl_context_properties)render->GetGLContext(),
+        CL_GL_CONTEXT_KHR, (cl_context_properties)render->GetEGLContext(), //eglGetCurrentContext()
         // HDC used to create the OpenGL context
-        CL_WGL_HDC_KHR, (cl_context_properties)render->GetDisplayContext(),
+        CL_EGL_DISPLAY_KHR, (cl_context_properties)render->GetEGLDisplay(), //eglGetCurrentDisplay()
         0
     };
 

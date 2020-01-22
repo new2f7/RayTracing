@@ -5,43 +5,61 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <gl/GL.h>
-#include <gl/GLU.h>
 
 static Render g_Render;
 Render* render = &g_Render;
 
-void Render::InitGL()
+// From https://devblogs.nvidia.com/egl-eye-opengl-visualization-without-x-server/
+static const EGLint configAttribs[] = {
+    EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+    EGL_BLUE_SIZE, 8,
+    EGL_GREEN_SIZE, 8,
+    EGL_RED_SIZE, 8,
+    EGL_DEPTH_SIZE, 8,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+    EGL_NONE
+};
+
+static const int pbufferWidth = 1080;
+static const int pbufferHeight = 1920;
+
+static const EGLint pbufferAttribs[] = {
+    EGL_WIDTH, pbufferWidth,
+    EGL_HEIGHT, pbufferHeight,
+    EGL_NONE,
+};
+
+void Render::InitEGL()
 {
-    PIXELFORMATDESCRIPTOR pfd;
-    ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
-    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-    pfd.nVersion = 1;
-    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 32;
-    pfd.cDepthBits = 32;
-    pfd.cStencilBits = 8;
-    pfd.iLayerType = PFD_MAIN_PLANE;
+    // From https://devblogs.nvidia.com/egl-eye-opengl-visualization-without-x-server/
+    // 1. Initialize EGL
+    m_EGLDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
-    int pixelFormat = ChoosePixelFormat(m_DisplayContext, &pfd);
-    SetPixelFormat(m_DisplayContext, pixelFormat, &pfd);
+    EGLint major, minor;
 
-    m_GLContext = wglCreateContext(m_DisplayContext);
-    wglMakeCurrent(m_DisplayContext, m_GLContext);
+    eglInitialize(m_EGLDisplay, &major, &minor);
 
-    // Disable VSync
-    using wglSwapIntervalEXT_Func = BOOL(APIENTRY *)(int);
-    wglSwapIntervalEXT_Func wglSwapIntervalEXT = wglSwapIntervalEXT_Func(wglGetProcAddress("wglSwapIntervalEXT"));
-    if (wglSwapIntervalEXT)
-    {
-        wglSwapIntervalEXT(0);
-    }
+    // 2. Select an appropriate configuration
+    EGLint numConfigs;
+    EGLConfig eglCfg;
+
+    eglChooseConfig(m_EGLDisplay, configAttribs, &eglCfg, 1, &numConfigs);
+
+    // 3. Create a surface
+    EGLSurface eglSurf = eglCreatePbufferSurface(m_EGLDisplay, eglCfg, pbufferAttribs);
+
+    // 4. Bind the API
+    eglBindAPI(EGL_OPENGL_API);
+
+    // 5. Create a context and make it current
+    m_EGLContext = eglCreateContext(m_EGLDisplay, eglCfg, EGL_NO_CONTEXT, NULL);
+
+    eglMakeCurrent(m_EGLDisplay, eglSurf, eglSurf, m_EGLContext);
 }
 
 void Render::Init()
 {
-    InitGL();
+    InitEGL();
 
     m_Viewport = std::make_shared<Viewport>(0, 0, 1280, 720);
     m_Camera = std::make_shared<Camera>(m_Viewport);
@@ -127,14 +145,14 @@ unsigned int Render::GetGlobalWorkSize() const
     }
 }
 
-HDC Render::GetDisplayContext() const
+EGLDisplay Render::GetEGLDisplay() const
 {
-    return m_DisplayContext;
+    return m_EGLDisplay;
 }
 
-HGLRC Render::GetGLContext() const
+EGLContext Render::GetEGLContext() const
 {
-    return m_GLContext;
+    return m_EGLContext;
 }
 
 std::shared_ptr<CLContext> Render::GetCLContext() const
@@ -195,5 +213,7 @@ void Render::RenderFrame()
 
 void Render::Shutdown()
 {
-
+    // From https://devblogs.nvidia.com/egl-eye-opengl-visualization-without-x-server/
+    // 6. Terminate EGL when finished
+    eglTerminate(m_EGLDisplay);
 }

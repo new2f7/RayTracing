@@ -7,6 +7,7 @@
 #include "utils/viewport.hpp"
 #include <memory>
 #include <ctime>
+#include <EGL/egl.h>
 
 #define BVH_INTERSECTION
 
@@ -21,14 +22,14 @@ public:
     double       GetDeltaTime()      const;
     unsigned int GetGlobalWorkSize() const;
 
-    HDC          GetDisplayContext() const;
-    HGLRC        GetGLContext()      const;
+    EGLDisplay   GetEGLDisplay()     const;
+    EGLContext   GetEGLContext()     const;
 
     std::shared_ptr<CLContext> GetCLContext() const;
     std::shared_ptr<CLKernel>  GetCLKernel()  const;
 
 private:
-    void InitGL();
+    void InitEGL();
     void SetupBuffers();
     void FrameBegin();
     void FrameEnd();
@@ -38,8 +39,8 @@ private:
     double m_StartFrameTime;
     double m_PreviousFrameTime;
     // Contexts
-    HDC m_DisplayContext;
-    HGLRC m_GLContext;
+    EGLDisplay m_EGLDisplay;
+    EGLContext m_EGLContext;
     std::shared_ptr<CLContext>  m_CLContext;
     // Kernels
     std::shared_ptr<CLKernel>   m_RenderKernel;
