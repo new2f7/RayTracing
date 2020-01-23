@@ -10,11 +10,10 @@ set(CONTEXT_SOURCES
 set(IO_SOURCES
     src/io/hdr_loader.cpp
     src/io/image_loader.hpp
-    )
+)
 
 set(KERNELS_SOURCES
     src/kernels/kernel_bvh.cl
-    src/kernels/kernel_grid.cl
 )
 
 set(MATHLIB_SOURCES
@@ -57,9 +56,8 @@ set(SOURCES
 
 add_executable(RayTracing ${SOURCES})
 find_package(OpenCL REQUIRED)
-find_package(OpenGL REQUIRED)
 target_include_directories(RayTracing PUBLIC "${RayTracing_SOURCE_DIR}/src")
-target_link_libraries(RayTracing PUBLIC OpenCL::OpenCL OpenGL::GL OpenGL::GLU)
+target_link_libraries(RayTracing PUBLIC OpenCL::OpenCL)
 set_target_properties(RayTracing PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY ${RayTracing_SOURCE_DIR}
 )

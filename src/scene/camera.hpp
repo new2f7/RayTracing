@@ -9,7 +9,7 @@ class Camera
 {
 public:
     Camera(std::shared_ptr<Viewport> viewport);
-    //void Update();
+    void Update();
 
     float3 GetOrigin()      const { return m_Origin; }
     float3 GetFrontVector() const { return m_Front; }

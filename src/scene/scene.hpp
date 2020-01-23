@@ -13,9 +13,7 @@ class Scene
 public:
     Scene(const char* filename);
     virtual void SetupBuffers() = 0;
-    virtual void DrawDebug() = 0;
-    const std::vector<Triangle>& GetTriangles() const;
-    
+
 private:
     void LoadTriangles(const char* filename);
     void LoadMaterials(const char* filename);
@@ -37,7 +35,6 @@ class BVHScene : public Scene
 public:
     BVHScene(const char* filename, unsigned int maxPrimitivesInNode);
     virtual void SetupBuffers();
-    virtual void DrawDebug();
 
 private:
     BVHBuildNode* RecursiveBuild(
@@ -55,31 +52,5 @@ private:
     BVHBuildNode* m_Root;
 
 };
-
-
-/*
-class Sphere
-{
-public:
-    Sphere(float3 Position, float Radius) :
-        pos(Position),
-        color(float3(Position.z, Position.y, Position.x).normalize()),
-        r(Radius)
-    {}
-
-    // Getters...
-    float3 GetPosition() const { return pos;    }
-    float3 GetColor()    const { return color;    }
-    float  GetRadius()   const { return r;        }
-
-private:
-    float3 pos;
-    float3 color;
-    float  r;
-    // Padded to align on 4 floats due to technical reasons
-    float  unused[3];
-
-};
-*/
 
 #endif // SCENE_HPP

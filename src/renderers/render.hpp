@@ -18,28 +18,19 @@ public:
     void         Shutdown();
 
     double       GetCurtime()        const;
-    double       GetDeltaTime()      const;
     unsigned int GetGlobalWorkSize() const;
-
-    HDC          GetDisplayContext() const;
-    HGLRC        GetGLContext()      const;
 
     std::shared_ptr<CLContext> GetCLContext() const;
     std::shared_ptr<CLKernel>  GetCLKernel()  const;
 
 private:
-    void InitGL();
     void SetupBuffers();
-    void FrameBegin();
-    void FrameEnd();
-    
+
 private:
     // Timing
     double m_StartFrameTime;
     double m_PreviousFrameTime;
     // Contexts
-    HDC m_DisplayContext;
-    HGLRC m_GLContext;
     std::shared_ptr<CLContext>  m_CLContext;
     // Kernels
     std::shared_ptr<CLKernel>   m_RenderKernel;

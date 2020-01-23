@@ -10,17 +10,6 @@ CLContext::CLContext(const cl::Platform& platform)
 {
     std::cout << "Platform: " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
 
-    cl_context_properties props[] =
-    {
-        // OpenCL platform
-        CL_CONTEXT_PLATFORM, (cl_context_properties)platform(),
-        // OpenGL context
-        CL_GL_CONTEXT_KHR, (cl_context_properties)render->GetGLContext(),
-        // HDC used to create the OpenGL context
-        CL_WGL_HDC_KHR, (cl_context_properties)render->GetDisplayContext(),
-        0
-    };
-
     std::vector<cl::Device> platform_devices;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &platform_devices);    
     if (platform_devices.empty())
@@ -44,7 +33,7 @@ CLContext::CLContext(const cl::Platform& platform)
     }
 
     cl_int errCode;
-    m_Context = cl::Context(platform_devices, props, 0, 0, &errCode);
+    m_Context = cl::Context(platform_devices, NULL, 0, 0, &errCode);
     if (errCode)
     {
         throw CLException("Failed to create context", errCode);

@@ -5,9 +5,6 @@
 #include <CL/cl2.hpp>
 #include <memory>
 
-// OpenCL & OpenGL interloperability
-// https://software.intel.com/en-us/articles/opencl-and-opengl-interoperability-tutorial
-
 enum class RenderKernelArgument_t : unsigned int
 {
     BUFFER_OUT,

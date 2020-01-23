@@ -5,56 +5,12 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
-#include <ctime>
-#include <cctype>
-#include <gl/GL.h>
 
 Scene::Scene(const char* filename)
 {
     LoadTriangles(filename);
 
 }
-
-const std::vector<Triangle>& Scene::GetTriangles() const
-{
-    return m_Triangles;
-}
-
-//void ComputeTangentSpace(Vertex& v1, Vertex& v2, Vertex& v3)
-//{
-//    const float3& v1p = v1.position;
-//    const float3& v2p = v2.position;
-//    const float3& v3p = v3.position;
-//
-//    const float2& v1t = v1.texcoord;
-//    const float2& v2t = v2.texcoord;
-//    const float2& v3t = v3.texcoord;
-//
-//    double x1 = v2p.x - v1p.x;
-//    double x2 = v3p.x - v1p.x;
-//    double y1 = v2p.y - v1p.y;
-//    double y2 = v3p.y - v1p.y;
-//    double z1 = v2p.z - v1p.z;
-//    double z2 = v3p.z - v1p.z;
-//
-//    double s1 = v2t.x - v1t.x;
-//    double s2 = v3t.x - v1t.x;
-//    double t1 = v2t.y - v1t.y;
-//    double t2 = v3t.y - v1t.y;
-//
-//    double r = 1.0 / (s1 * t2 - s2 * t1);
-//    float3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
-//    float3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
-//
-//    v1.tangent_s += sdir;
-//    v2.tangent_s += sdir;
-//    v3.tangent_s += sdir;
-//
-//    v1.tangent_t += tdir;
-//    v2.tangent_t += tdir;
-//    v3.tangent_t += tdir;
-//
-//}
 
 void Scene::LoadTriangles(const char* filename)
 {
@@ -68,8 +24,6 @@ void Scene::LoadTriangles(const char* filename)
     std::vector<float3> positions;
     std::vector<float3> normals;
     std::vector<float2> texcoords;
-
-    Material currentMaterial;
 
     std::cout << "Loading object file " << filename << std::endl;
 
@@ -300,107 +254,6 @@ void BVHScene::SetupBuffers()
     render->GetCLKernel()->SetArgument(RenderKernelArgument_t::BUFFER_MATERIAL, &m_MaterialBuffer, sizeof(cl::Buffer));
 
     
-}
-
-void DrawTree(BVHBuildNode* node, float x, float y, int depth)
-{
-    float size_x = 0.025f;
-    float size_y = 0.03f;
-    if (node->children[0])
-    {
-        DrawTree(node->children[0], x - 1.0f / y, y + 1, depth * 2);
-    }
-
-    if (node->nPrimitives == 0)
-    {
-        glColor3f(1, 0, 0);
-    }
-    else
-    {
-        glColor3f(0, 1, 0);
-    }
-    
-    glRectf(x / 4 - size_x, 1 - y / 8 - size_y, x / 4 + size_x, 1 - y / 8 + size_y);
-
-    if (node->children[1])
-    {
-        DrawTree(node->children[1], x + 1.0f / y, y + 1, depth * 2);
-    }
-}
-
-void BVHScene::DrawDebug()
-{
-    // XYZ Arrows
-    glColor3f(1, 0, 0);
-    glLineWidth(4);
-    glBegin(GL_LINE_LOOP);
-    glColor3f(1, 0, 0);
-    glVertex3f(0, 0, 0);
-    glVertex3f(200, 0, 0);
-    glEnd();
-    glBegin(GL_LINE_LOOP);
-    glColor3f(0, 1, 0);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 200, 0);
-    glEnd();
-    glBegin(GL_LINE_LOOP);
-    glColor3f(0, 0, 1);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 200);
-    glEnd();
-    glColor3f(1, 0, 0);
-    glLineWidth(1);
-
-
-    glColor3f(0, 1, 0);
-    glBegin(GL_LINES);
-    for (unsigned int i = 0; i < m_Nodes.size(); ++i)
-    {
-
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.min.z);
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.min.z);
-
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.min.z);
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.min.z);
-
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.min.z);
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.max.z);
-        
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.max.z);
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.max.z);
-                
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.max.z);
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.max.z);
-
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.min.z);
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.max.z);
-                
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.min.z);
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.min.z);
-        
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.min.z);
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.min.z);
-
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.min.z);
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.max.z);
-        
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.min.z);
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.max.z);
-        
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.min.y, m_Nodes[i].bounds.max.z);
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.max.z);
-        
-        glVertex3f(m_Nodes[i].bounds.min.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.max.z);
-        glVertex3f(m_Nodes[i].bounds.max.x, m_Nodes[i].bounds.max.y, m_Nodes[i].bounds.max.z);
-
-
-    }
-
-    glEnd();
-
-    
-    //DrawTree(m_Root, 0.0f, 1.0f, 1);
-
 }
 
 BVHBuildNode* BVHScene::RecursiveBuild(
