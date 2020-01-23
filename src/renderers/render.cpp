@@ -5,37 +5,56 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <gl/GL.h>
-#include <gl/GLU.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glx.h>
 
 static Render g_Render;
 Render* render = &g_Render;
 
+typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+typedef Bool (*glXMakeContextCurrentARBProc)(Display*, GLXDrawable, GLXDrawable, GLXContext);
+static glXCreateContextAttribsARBProc glXCreateContextAttribsARB = NULL;
+static glXMakeContextCurrentARBProc   glXMakeContextCurrentARB   = NULL;
+
 void Render::InitGL()
 {
-    PIXELFORMATDESCRIPTOR pfd;
-    ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
-    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-    pfd.nVersion = 1;
-    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 32;
-    pfd.cDepthBits = 32;
-    pfd.cStencilBits = 8;
-    pfd.iLayerType = PFD_MAIN_PLANE;
+    glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddressARB( (const GLubyte *) "glXCreateContextAttribsARB" );
+    glXMakeContextCurrentARB   = (glXMakeContextCurrentARBProc)   glXGetProcAddressARB( (const GLubyte *) "glXMakeContextCurrent"      );
 
-    int pixelFormat = ChoosePixelFormat(m_DisplayContext, &pfd);
-    SetPixelFormat(m_DisplayContext, pixelFormat, &pfd);
+    const char *displayName = NULL;
+    Display* display = XOpenDisplay( displayName );
 
-    m_GLContext = wglCreateContext(m_DisplayContext);
-    wglMakeCurrent(m_DisplayContext, m_GLContext);
+    static int visualAttribs[] = { None };
+    int numberOfFramebufferConfigurations = 0;
+    GLXFBConfig* fbConfigs = glXChooseFBConfig( display, DefaultScreen(display), visualAttribs, &numberOfFramebufferConfigurations );
 
-    // Disable VSync
-    using wglSwapIntervalEXT_Func = BOOL(APIENTRY *)(int);
-    wglSwapIntervalEXT_Func wglSwapIntervalEXT = wglSwapIntervalEXT_Func(wglGetProcAddress("wglSwapIntervalEXT"));
-    if (wglSwapIntervalEXT)
+    int context_attribs[] = {
+        GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+        GLX_CONTEXT_MINOR_VERSION_ARB, 2,
+        GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB,
+        GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+        None
+    };
+
+    GLXContext openGLContext = glXCreateContextAttribsARB( display, fbConfigs[0], 0, True, context_attribs);
+
+    int pbufferAttribs[] = {
+        GLX_PBUFFER_WIDTH,  32,
+        GLX_PBUFFER_HEIGHT, 32,
+        None
+    };
+    GLXPbuffer pbuffer = glXCreatePbuffer( display, fbConfigs[0], pbufferAttribs );
+
+    // clean up:
+    XFree( fbConfigs );
+    XSync( display, False );
+
+    if ( !glXMakeContextCurrent( display, pbuffer, pbuffer, openGLContext ) )
     {
-        wglSwapIntervalEXT(0);
+        // something went wrong
     }
 }
 
@@ -127,6 +146,7 @@ unsigned int Render::GetGlobalWorkSize() const
     }
 }
 
+/*
 HDC Render::GetDisplayContext() const
 {
     return m_DisplayContext;
@@ -136,6 +156,7 @@ HGLRC Render::GetGLContext() const
 {
     return m_GLContext;
 }
+*/
 
 std::shared_ptr<CLContext> Render::GetCLContext() const
 {
@@ -188,7 +209,7 @@ void Render::RenderFrame()
 
     glFinish();
 
-    SwapBuffers(m_DisplayContext);
+    //SwapBuffers(m_DisplayContext);
 
     FrameEnd();
 }

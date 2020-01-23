@@ -21,8 +21,8 @@ public:
     double       GetDeltaTime()      const;
     unsigned int GetGlobalWorkSize() const;
 
-    HDC          GetDisplayContext() const;
-    HGLRC        GetGLContext()      const;
+    //Display      GetDisplay()        const;
+    //GLXContext   GetGLContext()      const;
 
     std::shared_ptr<CLContext> GetCLContext() const;
     std::shared_ptr<CLKernel>  GetCLKernel()  const;
@@ -38,8 +38,8 @@ private:
     double m_StartFrameTime;
     double m_PreviousFrameTime;
     // Contexts
-    HDC m_DisplayContext;
-    HGLRC m_GLContext;
+    //Display* m_Display;
+    //GLXContext m_GLContext;
     std::shared_ptr<CLContext>  m_CLContext;
     // Kernels
     std::shared_ptr<CLKernel>   m_RenderKernel;

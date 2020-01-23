@@ -58,8 +58,9 @@ set(SOURCES
 add_executable(RayTracing ${SOURCES})
 find_package(OpenCL REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(X11 REQUIRED)
 target_include_directories(RayTracing PUBLIC "${RayTracing_SOURCE_DIR}/src")
-target_link_libraries(RayTracing PUBLIC OpenCL::OpenCL OpenGL::GL OpenGL::GLU)
+target_link_libraries(RayTracing PUBLIC OpenCL::OpenCL OpenGL::GL OpenGL::GLU X11)
 set_target_properties(RayTracing PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY ${RayTracing_SOURCE_DIR}
 )

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <GL/glx.h>
 
 CLContext::CLContext(const cl::Platform& platform)
 {
@@ -15,9 +16,9 @@ CLContext::CLContext(const cl::Platform& platform)
         // OpenCL platform
         CL_CONTEXT_PLATFORM, (cl_context_properties)platform(),
         // OpenGL context
-        CL_GL_CONTEXT_KHR, (cl_context_properties)render->GetGLContext(),
-        // HDC used to create the OpenGL context
-        CL_WGL_HDC_KHR, (cl_context_properties)render->GetDisplayContext(),
+        CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+        // OpenGL display
+        CL_GLX_DISPLAY_KHR,  (cl_context_properties)glXGetCurrentDisplay(),
         0
     };
 
