@@ -6,7 +6,7 @@ Camera::Camera(std::shared_ptr<Viewport> viewport)
     :
     m_Viewport(viewport),
     m_Origin(0.0f, -20.0f, 20.0f),
-    m_Pitch(MATH_PIDIV2),
+    m_Pitch(2.0f),
     m_Yaw(MATH_PIDIV2),
     m_Speed(32.0f),
     m_FrameCount(0),

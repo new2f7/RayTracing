@@ -10,7 +10,7 @@ Render* render = &g_Render;
 
 void Render::Init()
 {
-    m_Viewport = std::make_shared<Viewport>(1280, 720);
+    m_Viewport = std::make_shared<Viewport>(3840, 2160);
     m_Camera = std::make_shared<Camera>(m_Viewport);
     m_Scene = std::make_shared<BVHScene>("meshes/dragon.obj", 4);
 
