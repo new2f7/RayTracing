@@ -2,11 +2,12 @@
 #define RAYTRACING_STORE_BMP_HPP
 
 #include <mathlib/mathlib.hpp>
+#include <utils/viewport.hpp>
 
 class StoreBMP
 {
 public:
-    static bool Store(const char *fileName, float3* pixels, unsigned int width, unsigned int height);
+    static bool Store(const char *fileName, const std::shared_ptr<Viewport>& vp);
 };
 
 #endif //RAYTRACING_STORE_BMP_HPP

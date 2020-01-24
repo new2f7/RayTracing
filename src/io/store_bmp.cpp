@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <cmath>
+#include <memory>
 #include "store_bmp.hpp"
 
 #pragma pack(push, 1)
@@ -30,14 +31,9 @@ struct BMPInfoHeader {
 };
 #pragma pack(pop)
 
-bool StoreBMP::Store(const char *fileName, float3 *pixels, unsigned int width, unsigned int height) {
+bool StoreBMP::Store(const char *fileName, const std::shared_ptr<Viewport>& vp) {
 
-    if (width <= 0 || height <= 0)
-    {
-        throw std::runtime_error("The image width and height must be positive numbers.");
-    }
-
-    if (width % 4 != 0)
+    if (vp->width % 4 != 0)
     {
         throw std::runtime_error("Storing images with width % 4 != 0 is not supported.");
     }
@@ -49,8 +45,8 @@ bool StoreBMP::Store(const char *fileName, float3 *pixels, unsigned int width, u
         BMPInfoHeader bmp_info_header;
 
         bmp_info_header.size = sizeof(BMPInfoHeader);
-        bmp_info_header.width = width;
-        bmp_info_header.height = height;
+        bmp_info_header.width = vp->width;
+        bmp_info_header.height = vp->height;
         bmp_info_header.bit_count = 32;
 
         assert(bmp_info_header.width * bmp_info_header.height * bmp_info_header.bit_count % 8 == 0);
@@ -61,11 +57,9 @@ bool StoreBMP::Store(const char *fileName, float3 *pixels, unsigned int width, u
         of.write((const char *) &file_header, sizeof(file_header));
         of.write((const char *) &bmp_info_header, sizeof(bmp_info_header));
 
-        float* values = (float*)pixels;
-
-        for (int i = 0; i < width * height * 4; ++i)
+        for (int i = 0; i < vp->width * vp->height * 4; ++i)
         {
-            uint8_t value = static_cast<uint8_t>(roundf(values[i] * 255.0f));
+            uint8_t value = static_cast<uint8_t>(roundf(vp->pixels[i] * 255.0f));
             of << value;
         }
 

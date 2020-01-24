@@ -10,7 +10,7 @@ Render* render = &g_Render;
 
 void Render::Init()
 {
-    m_Viewport = std::make_shared<Viewport>(0, 0, 1280, 720);
+    m_Viewport = std::make_shared<Viewport>(1280, 720);
     m_Camera = std::make_shared<Camera>(m_Viewport);
     m_Scene = std::make_shared<BVHScene>("meshes/dragon.obj", 4);
 
@@ -97,10 +97,10 @@ void Render::RenderFrame()
 
     unsigned int globalWorksize = GetGlobalWorkSize();
     GetCLContext()->ExecuteKernel(GetCLKernel(), globalWorksize);
-    GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float3) * globalWorksize);
+    GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float) * 4 * globalWorksize);
     GetCLContext()->Finish();
 
-    StoreBMP::Store("out.bmp", m_Viewport->pixels, m_Viewport->width, m_Viewport->height);
+    StoreBMP::Store("out.bmp", m_Viewport);
 }
 
 void Render::Shutdown()
