@@ -10,6 +10,8 @@ set(CONTEXT_SOURCES
 set(IO_SOURCES
     src/io/hdr_loader.cpp
     src/io/image_loader.hpp
+    src/io/store_bmp.cpp
+    src/io/store_bmp.hpp
 )
 
 set(KERNELS_SOURCES

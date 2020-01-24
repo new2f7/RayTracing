@@ -1,6 +1,7 @@
 #include "render.hpp"
 #include "mathlib/mathlib.hpp"
 #include "io/image_loader.hpp"
+#include "io/store_bmp.hpp"
 #include "utils/cl_exception.hpp"
 #include <iostream>
 
@@ -98,6 +99,8 @@ void Render::RenderFrame()
     GetCLContext()->ExecuteKernel(GetCLKernel(), globalWorksize);
     GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float3) * globalWorksize);
     GetCLContext()->Finish();
+
+    StoreBMP::Store("out.bmp", m_Viewport->pixels, m_Viewport->width, m_Viewport->height);
 }
 
 void Render::Shutdown()
