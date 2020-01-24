@@ -1,6 +1,6 @@
 #include "render.hpp"
 #include "mathlib/mathlib.hpp"
-#include "io/image_loader.hpp"
+#include "io/hdr_loader.hpp"
 #include "io/store_bmp.hpp"
 #include "utils/cl_exception.hpp"
 #include <iostream>
