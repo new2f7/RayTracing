@@ -6,17 +6,16 @@
 struct Viewport
 {
 public:
-    Viewport(size_t x, size_t y, size_t width, size_t height)
-        : x(x), y(y), width(width), height(height)
+    Viewport(size_t width, size_t height)
+        : width(width), height(height)
     {
-        pixels = new float3[width * height];
+        pixels = new float[width * height * 4]; // RGBA
     }
 
     ~Viewport() { if (pixels) delete[] pixels; }
 
-    unsigned int x, y;
     unsigned int width, height;
-    float3* pixels;
+    float* pixels;
 
 };
 

@@ -145,7 +145,7 @@ void Render::Init(HWND hwnd)
     GetWindowRect(hwnd, &hwndRect);
 
     unsigned int width = hwndRect.right - hwndRect.left, height = hwndRect.bottom - hwndRect.top;
-    m_Viewport = std::make_shared<Viewport>(0, 0, width, height);
+    m_Viewport = std::make_shared<Viewport>(width, height);
     m_Camera = std::make_shared<Camera>(m_Viewport);
 #ifdef BVH_INTERSECTION
     m_Scene = std::make_shared<BVHScene>("meshes/dragon.obj", 4);
@@ -277,7 +277,7 @@ void Render::RenderFrame()
 
     unsigned int globalWorksize = GetGlobalWorkSize();
     GetCLContext()->ExecuteKernel(GetCLKernel(), globalWorksize);
-    GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float3) * globalWorksize);
+    GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float) * 4 * globalWorksize);
     GetCLContext()->Finish();
 
     glDrawPixels(m_Viewport->width, m_Viewport->height, GL_RGBA, GL_FLOAT, m_Viewport->pixels);
