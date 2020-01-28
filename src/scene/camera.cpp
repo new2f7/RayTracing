@@ -23,9 +23,7 @@ void Camera::Update()
     render->GetCLKernel()->SetArgument(RenderKernelArgument_t::CAM_FRONT, &m_Front, sizeof(float3));
     render->GetCLKernel()->SetArgument(RenderKernelArgument_t::CAM_UP, &m_Up, sizeof(float3));
     render->GetCLKernel()->SetArgument(RenderKernelArgument_t::FRAME_COUNT, &m_FrameCount, sizeof(unsigned int));
-    unsigned int seed = rand();
-    render->GetCLKernel()->SetArgument(RenderKernelArgument_t::FRAME_SEED, &seed, sizeof(unsigned int));
-    
+
     ++m_FrameCount;
 
 }
