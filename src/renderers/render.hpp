@@ -3,7 +3,7 @@
 
 #include "scene/camera.hpp"
 #include "scene/scene.hpp"
-#include "context/cl_context.hpp"
+#include "ocl_helper/ocl_helper.hpp"
 #include "utils/viewport.hpp"
 #include <memory>
 #include <ctime>
@@ -20,8 +20,8 @@ public:
     double       GetCurtime()        const;
     unsigned int GetGlobalWorkSize() const;
 
-    std::shared_ptr<CLContext> GetCLContext() const;
-    std::shared_ptr<CLKernel>  GetCLKernel()  const;
+    std::shared_ptr<OLContext> GetCLContext() const;
+    std::shared_ptr<OCLHelper>  GetCLKernel()  const;
 
 private:
     void SetupBuffers();
@@ -31,9 +31,9 @@ private:
     double m_StartFrameTime;
     double m_PreviousFrameTime;
     // Contexts
-    std::shared_ptr<CLContext>  m_CLContext;
+    std::shared_ptr<OLContext>  m_CLContext;
     // Kernels
-    std::shared_ptr<CLKernel>   m_RenderKernel;
+    std::shared_ptr<OCLHelper>   m_RenderKernel;
     // Scene
     std::shared_ptr<Camera>     m_Camera;
     std::shared_ptr<Scene>      m_Scene;

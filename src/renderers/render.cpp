@@ -21,11 +21,11 @@ void Render::Init()
         throw std::runtime_error("No OpenCL platforms found");
     }
     
-    m_CLContext = std::make_shared<CLContext>(all_platforms[0]);
+    m_CLContext = std::make_shared<OCLContext>(all_platforms[0]);
 
     std::vector<cl::Device> platform_devices;
     all_platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &platform_devices);
-    m_RenderKernel = std::make_shared<CLKernel>("src/kernels/kernel_bvh.cl", platform_devices);
+    m_RenderKernel = std::make_shared<OCLHelper>("src/kernels/kernel_bvh.cl", platform_devices);
 
     SetupBuffers();
 
@@ -81,12 +81,12 @@ unsigned int Render::GetGlobalWorkSize() const
     }
 }
 
-std::shared_ptr<CLContext> Render::GetCLContext() const
+std::shared_ptr<OLContext> Render::GetCLContext() const
 {
     return m_CLContext;
 }
 
-std::shared_ptr<CLKernel> Render::GetCLKernel() const
+std::shared_ptr<OCLHelper> Render::GetCLKernel() const
 {
     return m_RenderKernel;
 }

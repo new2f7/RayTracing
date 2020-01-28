@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.8)
 project(RayTracing CXX)
 
 set(CONTEXT_SOURCES
-    src/context/cl_context.cpp
-    src/context/cl_context.hpp
+    src/ocl_helper/ocl_helper.cpp
+    src/ocl_helper/ocl_helper.hpp
 )
 
 set(IO_SOURCES
