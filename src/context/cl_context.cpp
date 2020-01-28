@@ -39,7 +39,7 @@ CLContext::CLContext(const cl::Platform& platform)
         throw CLException("Failed to create context", errCode);
     }
 
-    m_Queue = cl::CommandQueue(m_Context, platform_devices[0], 0, &errCode);
+    m_Queue = cl::CommandQueue(m_Context, platform_devices[0], CL_QUEUE_PROFILING_ENABLE, &errCode);
     if (errCode)
     {
         throw CLException("Failed to create queue", errCode);
@@ -67,14 +67,40 @@ void CLContext::ReadBuffer(const cl::Buffer& buffer, void* data, size_t size) co
     }
 }
 
-void CLContext::ExecuteKernel(std::shared_ptr<CLKernel> kernel, size_t workSize) const
+time_t CLContext::RunKernelTimed(std::shared_ptr<CLKernel> kernel, size_t workSize) const
 {
-    cl_int errCode = m_Queue.enqueueNDRangeKernel(kernel->GetKernel(), cl::NullRange, cl::NDRange(workSize), cl::NullRange, 0);
+    cl_int errCode;
+    cl::Event event;
+    cl_ulong t_start = 0;
+    cl_ulong t_end = 0;
+
+    // execute kernel
+    errCode = m_Queue.enqueueNDRangeKernel(kernel->GetKernel(), cl::NullRange, cl::NDRange(workSize), cl::NullRange, nullptr, &event);
     if (errCode)
     {
         throw CLException("Failed to enqueue kernel", errCode);
     }
 
+    errCode = event.wait();
+    if (errCode)
+    {
+        throw CLException("Failed to wait for event", errCode);
+    }
+
+    // get times for statistics
+    errCode = event.getProfilingInfo(CL_PROFILING_COMMAND_START, &t_start);
+    if (errCode)
+    {
+        throw CLException("event.getProfilingInfo(start)", errCode);
+    }
+    errCode = event.getProfilingInfo(CL_PROFILING_COMMAND_END, &t_end);
+    if (errCode)
+    {
+        throw CLException ("event.getProfilingInfo(end)", errCode);
+    }
+
+    // return measured time
+    return static_cast<time_t>(t_end - t_start);
 }
 
 CLKernel::CLKernel(const char* filename, const std::vector<cl::Device>& devices)

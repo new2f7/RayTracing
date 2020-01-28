@@ -13,14 +13,18 @@ int main()
         return 0;
     }
 
-    try
+    size_t kernel_runs = 10;
+    for (size_t i = 0; i < kernel_runs; ++i)
     {
-        render->RenderFrame();
-    }
-    catch (const std::exception& ex)
-    {
-        std::cerr << "Caught exception: " << ex.what() << std::endl;
-        return 0;
+        try
+        {
+            render->RenderFrame();
+        }
+        catch (const std::exception& ex)
+        {
+            std::cerr << "Caught exception: " << ex.what() << std::endl;
+            return 0;
+        }
     }
 
     render->Shutdown();
