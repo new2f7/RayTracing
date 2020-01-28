@@ -3,8 +3,9 @@
 
 #include "scene/camera.hpp"
 #include "scene/scene.hpp"
-#include "context/cl_context.hpp"
+#include "ocl_helper/ocl_helper.hpp"
 #include "utils/viewport.hpp"
+#include "noma/ocl/helper.hpp"
 #include <memory>
 #include <ctime>
 
@@ -13,27 +14,21 @@
 class Render
 {
 public:
-    void         Init();
+    void         Init(std::string config_file, size_t width, size_t height);
     void         RenderFrame();
     void         Shutdown();
 
     double       GetCurtime()        const;
     unsigned int GetGlobalWorkSize() const;
 
-    std::shared_ptr<CLContext> GetCLContext() const;
-    std::shared_ptr<CLKernel>  GetCLKernel()  const;
+    std::shared_ptr<OCLHelper>  GetOCLHelper()  const;
 
 private:
     void SetupBuffers();
 
 private:
-    // Timing
-    double m_StartFrameTime;
-    double m_PreviousFrameTime;
-    // Contexts
-    std::shared_ptr<CLContext>  m_CLContext;
-    // Kernels
-    std::shared_ptr<CLKernel>   m_RenderKernel;
+    // OCLHelper
+    std::shared_ptr<OCLHelper>  m_OCLHelper;
     // Scene
     std::shared_ptr<Camera>     m_Camera;
     std::shared_ptr<Scene>      m_Scene;
