@@ -93,14 +93,16 @@ std::shared_ptr<CLKernel> Render::GetCLKernel() const
 
 void Render::RenderFrame()
 {
+
     m_Camera->Update();
 
-    unsigned int globalWorksize = GetGlobalWorkSize();
-    GetCLContext()->ExecuteKernel(GetCLKernel(), globalWorksize);
-    GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float) * 4 * globalWorksize);
-    GetCLContext()->Finish();
+    GetCLContext()->RunKernelTimed(GetCLKernel(), GetGlobalWorkSize());
 
-    StoreBMP::Store("out.bmp", m_Viewport);
+#ifdef STORE_BMP
+    GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float) * 4 * globalWorksize);
+    std::string filename = "out_" + std::to_string(m_Camera->GetFrameCount()) + ".bmp";
+    StoreBMP::Store(filename.c_str(), m_Viewport);
+#endif
 }
 
 void Render::Shutdown()
