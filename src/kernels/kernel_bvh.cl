@@ -527,7 +527,6 @@ __kernel void KernelEntry
     float3 cameraFront,
     float3 cameraUp,
     unsigned int frameCount,
-    unsigned int frameSeed,
     __read_only image2d_t tex
 )
 {

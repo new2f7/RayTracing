@@ -17,7 +17,6 @@ enum class RenderKernelArgument_t : unsigned int
     CAM_FRONT,
     CAM_UP,
     FRAME_COUNT,
-    FRAME_SEED,
     TEXTURE0,
 
     // Not using now
