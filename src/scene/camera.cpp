@@ -1,10 +1,8 @@
 #include "camera.hpp"
 #include "renderers/render.hpp"
-#include <iostream>
 
-Camera::Camera(std::shared_ptr<Viewport> viewport)
+Camera::Camera()
     :
-    m_Viewport(viewport),
     m_Origin(0.0f, -20.0f, 20.0f),
     m_Pitch(2.0f),
     m_Yaw(MATH_PIDIV2),
@@ -15,15 +13,15 @@ Camera::Camera(std::shared_ptr<Viewport> viewport)
     m_Front = float3(cosf(m_Yaw) * sinf(m_Pitch), sinf(m_Yaw) * sinf(m_Pitch), cosf(m_Pitch));
     m_Right = Cross(m_Front, m_Up).Normalize();
     m_Up = Cross(m_Right, m_Front);
+
+    render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::CAM_ORIGIN, &m_Origin, sizeof(float3));
+    render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::CAM_FRONT, &m_Front, sizeof(float3));
+    render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::CAM_UP, &m_Up, sizeof(float3));
 }
 
 void Camera::Update()
 {
-    render->GetCLKernel()->SetArgument(RenderKernelArgument_t::CAM_ORIGIN, &m_Origin, sizeof(float3));
-    render->GetCLKernel()->SetArgument(RenderKernelArgument_t::CAM_FRONT, &m_Front, sizeof(float3));
-    render->GetCLKernel()->SetArgument(RenderKernelArgument_t::CAM_UP, &m_Up, sizeof(float3));
-    render->GetCLKernel()->SetArgument(RenderKernelArgument_t::FRAME_COUNT, &m_FrameCount, sizeof(unsigned int));
+    render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::FRAME_COUNT, &m_FrameCount, sizeof(unsigned int));
 
     ++m_FrameCount;
-
 }

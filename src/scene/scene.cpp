@@ -229,29 +229,29 @@ void BVHScene::SetupBuffers()
 {
     cl_int errCode;
 
-    m_TriangleBuffer = cl::Buffer(render->GetCLContext()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Triangles.size() * sizeof(Triangle), m_Triangles.data(), &errCode);
+    m_TriangleBuffer = cl::Buffer(render->GetOCLHelper()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Triangles.size() * sizeof(Triangle), m_Triangles.data(), &errCode);
     if (errCode)
     {
         throw CLException("Failed to create scene buffer", errCode);
     }
 
-    render->GetCLKernel()->SetArgument(RenderKernelArgument_t::BUFFER_SCENE, &m_TriangleBuffer, sizeof(cl::Buffer));
+    render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::BUFFER_SCENE, &m_TriangleBuffer, sizeof(cl::Buffer));
 
-    m_NodeBuffer = cl::Buffer(render->GetCLContext()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Nodes.size() * sizeof(LinearBVHNode), m_Nodes.data(), &errCode);
+    m_NodeBuffer = cl::Buffer(render->GetOCLHelper()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Nodes.size() * sizeof(LinearBVHNode), m_Nodes.data(), &errCode);
     if (errCode)
     {
         throw CLException("Failed to create BVH node buffer", errCode);
     }
 
-    render->GetCLKernel()->SetArgument(RenderKernelArgument_t::BUFFER_NODE, &m_NodeBuffer, sizeof(cl::Buffer));
+    render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::BUFFER_NODE, &m_NodeBuffer, sizeof(cl::Buffer));
 
-    m_MaterialBuffer = cl::Buffer(render->GetCLContext()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Materials.size() * sizeof(Material), m_Materials.data(), &errCode);
+    m_MaterialBuffer = cl::Buffer(render->GetOCLHelper()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Materials.size() * sizeof(Material), m_Materials.data(), &errCode);
     if (errCode)
     {
         throw CLException("Failed to create material buffer", errCode);
     }
 
-    render->GetCLKernel()->SetArgument(RenderKernelArgument_t::BUFFER_MATERIAL, &m_MaterialBuffer, sizeof(cl::Buffer));
+    render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::BUFFER_MATERIAL, &m_MaterialBuffer, sizeof(cl::Buffer));
 
     
 }

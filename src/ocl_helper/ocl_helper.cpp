@@ -10,7 +10,7 @@
 
 OCLHelper::OCLHelper(const std::string config_file)
 {
-    m_ocl_config = ocl_config(config_file);
+    m_ocl_config = noma::ocl::config(config_file);
     m_ocl_helper = noma::ocl::helper(m_ocl_config);
     m_ocl_helper.write_device_info(std::cerr);
 
@@ -28,8 +28,8 @@ cl_ulong OCLHelper::RunKernelTimed(size_t work_items) const
                               { work_items }, // global size
                               { } // local size
     };
-    if (m_ocl_config.opencl_work_group_size() > 0)
-        ndr.local = { m_ocl_config.opencl_work_group_size() };
+    //if (m_ocl_config.opencl_work_group_size() > 0)
+    //    ndr.local = { m_ocl_config.opencl_work_group_size() };
     return m_ocl_helper.run_kernel_timed(m_Kernel, ndr);
 
 }

@@ -5,45 +5,30 @@
 #include "utils/cl_exception.hpp"
 #include <iostream>
 
-static Render g_Render;
-Render* render = &g_Render;
+//static Render g_Render;
+//Render* render = &g_Render;
 
 void Render::Init()
 {
+    std::string config_file; //TODO
+    m_OCLHelper = std::make_shared<OCLHelper>(config_file);
+    m_OCLHelper->CreateProgramFromFile("src/kernels/kernel_bvh.cl", "bvh_kernel");
+
     m_Viewport = std::make_shared<Viewport>(3840, 2160);
-    m_Camera = std::make_shared<Camera>(m_Viewport);
+    m_Camera = std::make_shared<Camera>();
     m_Scene = std::make_shared<BVHScene>("meshes/dragon.obj", 4);
 
-    std::vector<cl::Platform> all_platforms;
-    cl::Platform::get(&all_platforms);
-    if (all_platforms.empty())
-    {
-        throw std::runtime_error("No OpenCL platforms found");
-    }
-    
-    m_CLContext = std::make_shared<OCLContext>(all_platforms[0]);
-
-    std::vector<cl::Device> platform_devices;
-    all_platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &platform_devices);
-    m_RenderKernel = std::make_shared<OCLHelper>("src/kernels/kernel_bvh.cl", platform_devices);
-
     SetupBuffers();
-
 }
 
 Image image;
 void Render::SetupBuffers()
 {
-    GetCLKernel()->SetArgument(RenderKernelArgument_t::WIDTH, &m_Viewport->width, sizeof(unsigned int));
-    GetCLKernel()->SetArgument(RenderKernelArgument_t::HEIGHT, &m_Viewport->height, sizeof(unsigned int));
+    m_OCLHelper->SetArgument(RenderKernelArgument_t::WIDTH, &m_Viewport->width, sizeof(unsigned int));
+    m_OCLHelper->SetArgument(RenderKernelArgument_t::HEIGHT, &m_Viewport->height, sizeof(unsigned int));
 
-    cl_int errCode;
-    m_OutputBuffer = cl::Buffer(GetCLContext()->GetContext(), CL_MEM_READ_WRITE, GetGlobalWorkSize() * sizeof(float3), 0, &errCode);
-    if (errCode)
-    {
-        throw CLException("Failed to create output buffer", errCode);
-    }
-    GetCLKernel()->SetArgument(RenderKernelArgument_t::BUFFER_OUT, &m_OutputBuffer, sizeof(cl::Buffer));
+    m_OutputBuffer = m_OCLHelper->GetOCLHelper().create_buffer(CL_MEM_READ_WRITE, GetGlobalWorkSize() * sizeof(float) * 4);
+    m_OCLHelper->SetArgument(RenderKernelArgument_t::BUFFER_OUT, &m_OutputBuffer, sizeof(cl::Buffer));
     
     m_Scene->SetupBuffers();
 
@@ -55,12 +40,11 @@ void Render::SetupBuffers()
     HDRLoader::Load("textures/Topanga_Forest_B_3k.hdr", image);
     //HDRLoader::Load("textures/studio.hdr", image);
 
-    m_Texture0 = cl::Image2D(GetCLContext()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, imageFormat, image.width, image.height, 0, image.colors, &errCode);
-    if (errCode)
-    {
-        throw CLException("Failed to create image", errCode);
-    }
-    GetCLKernel()->SetArgument(RenderKernelArgument_t::TEXTURE0, &m_Texture0, sizeof(cl::Image2D));
+    cl_int errCode;
+    m_Texture0 = cl::Image2D(m_OCLHelper->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, imageFormat, image.width, image.height, 0, image.colors, &errCode);
+    noma::ocl::error_handler(errCode, "Failed to create image");
+
+    m_OCLHelper->SetArgument(RenderKernelArgument_t::TEXTURE0, &m_Texture0, sizeof(cl::Image2D));
 
 }
 
@@ -81,22 +65,12 @@ unsigned int Render::GetGlobalWorkSize() const
     }
 }
 
-std::shared_ptr<OLContext> Render::GetCLContext() const
-{
-    return m_CLContext;
-}
-
-std::shared_ptr<OCLHelper> Render::GetCLKernel() const
-{
-    return m_RenderKernel;
-}
-
 void Render::RenderFrame()
 {
 
     m_Camera->Update();
 
-    GetCLContext()->RunKernelTimed(GetCLKernel(), GetGlobalWorkSize());
+    m_OCLHelper->RunKernelTimed(GetGlobalWorkSize());
 
 #ifdef STORE_BMP
     GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float) * 4 * globalWorksize);
@@ -108,4 +82,9 @@ void Render::RenderFrame()
 void Render::Shutdown()
 {
 
+}
+
+std::shared_ptr<OCLHelper> Render::GetOCLHelper() const
+{
+    return m_OCLHelper;
 }
