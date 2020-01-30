@@ -12,6 +12,8 @@ set(IO_SOURCES
     src/io/hdr_loader.hpp
     src/io/store_bmp.cpp
     src/io/store_bmp.hpp
+    src/io/benchmark_config.cpp
+    src/io/benchmark_config.hpp
 )
 
 set(KERNELS_SOURCES

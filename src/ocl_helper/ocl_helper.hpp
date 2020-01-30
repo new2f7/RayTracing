@@ -27,20 +27,20 @@ class OCLHelper
 public:
     OCLHelper(const std::string config_file);
 
+    const cl::Context& GetContext() const { return m_ocl_helper->context(); }
+    std::shared_ptr<noma::ocl::helper> GetOCLHelper() const { return m_ocl_helper; }
+
     void CreateProgramFromFile(const std::string kernel_file, const std::string kernel_name);
 
     void SetArgument(RenderKernelArgument_t argIndex, void* data, size_t size);
 
-    const cl::Context& GetContext() /*const*/ { return m_ocl_helper.context(); }
-    const noma::ocl::helper& GetOCLHelper() /*const*/ { return m_ocl_helper; }
+    cl_ulong RunKernelTimed(size_t work_items);
 
     void ReadBuffer(const cl::Buffer& buffer, void* ptr, size_t size) const;
 
-    cl_ulong RunKernelTimed(size_t work_items) const;
-
 private:
-    noma::ocl::helper m_ocl_helper;
-    noma::ocl::config m_ocl_config;
+    std::shared_ptr<noma::ocl::helper> m_ocl_helper;
+    std::shared_ptr<noma::ocl::config> m_ocl_config;
     cl::Kernel  m_Kernel;
     cl::Program m_Program;
 

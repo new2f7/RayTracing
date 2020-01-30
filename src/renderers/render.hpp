@@ -14,7 +14,7 @@
 class Render
 {
 public:
-    void         Init();
+    void         Init(std::string config_file, size_t width, size_t height);
     void         RenderFrame();
     void         Shutdown();
 
@@ -34,7 +34,7 @@ private:
     std::shared_ptr<Scene>      m_Scene;
     std::shared_ptr<Viewport>   m_Viewport;
     // Buffers
-    noma::ocl::buffer m_OutputBuffer;
+    cl::Buffer m_OutputBuffer;
     cl::Image2D m_Texture0;
 
 };

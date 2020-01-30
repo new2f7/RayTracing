@@ -5,16 +5,15 @@
 #include "utils/cl_exception.hpp"
 #include <iostream>
 
-//static Render g_Render;
-//Render* render = &g_Render;
+static Render g_Render;
+Render* render = &g_Render;
 
-void Render::Init()
+void Render::Init(std::string config_file, size_t width, size_t height)
 {
-    std::string config_file; //TODO
     m_OCLHelper = std::make_shared<OCLHelper>(config_file);
-    m_OCLHelper->CreateProgramFromFile("src/kernels/kernel_bvh.cl", "bvh_kernel");
+    m_OCLHelper->CreateProgramFromFile("src/kernels/kernel_bvh.cl", "KernelEntry");
 
-    m_Viewport = std::make_shared<Viewport>(3840, 2160);
+    m_Viewport = std::make_shared<Viewport>(width, height);
     m_Camera = std::make_shared<Camera>();
     m_Scene = std::make_shared<BVHScene>("meshes/dragon.obj", 4);
 
@@ -27,7 +26,7 @@ void Render::SetupBuffers()
     m_OCLHelper->SetArgument(RenderKernelArgument_t::WIDTH, &m_Viewport->width, sizeof(unsigned int));
     m_OCLHelper->SetArgument(RenderKernelArgument_t::HEIGHT, &m_Viewport->height, sizeof(unsigned int));
 
-    m_OutputBuffer = m_OCLHelper->GetOCLHelper().create_buffer(CL_MEM_READ_WRITE, GetGlobalWorkSize() * sizeof(float) * 4);
+    m_OutputBuffer = m_OCLHelper->GetOCLHelper()->create_buffer(CL_MEM_READ_WRITE, GetGlobalWorkSize() * sizeof(float) * 4);
     m_OCLHelper->SetArgument(RenderKernelArgument_t::BUFFER_OUT, &m_OutputBuffer, sizeof(cl::Buffer));
     
     m_Scene->SetupBuffers();
@@ -73,7 +72,7 @@ void Render::RenderFrame()
     m_OCLHelper->RunKernelTimed(GetGlobalWorkSize());
 
 #ifdef STORE_BMP
-    GetCLContext()->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float) * 4 * globalWorksize);
+    m_OCLHelper->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float) * 4 * GetGlobalWorkSize());
     std::string filename = "out_" + std::to_string(m_Camera->GetFrameCount()) + ".bmp";
     StoreBMP::Store(filename.c_str(), m_Viewport);
 #endif
