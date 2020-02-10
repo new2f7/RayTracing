@@ -91,15 +91,16 @@ float3 SampleHemisphereCosine(float3 n, unsigned int* seed)
     return normalize(s*cos(phi)*sinTheta + t*sin(phi)*sinTheta + n*sqrt(1.0f - sinThetaSqr));
 }
 
-#define ALGORITHM2
+//#define ALGORITHM1
 
 #ifdef ALGORITHM1
-bool RayTriangle(const __global Triangle* triangle, const Ray* r, float* t, float3* n)
+bool RayTriangle(const Ray* r, const __global Triangle* triangle, IntersectData* isect)
+               //const __global Triangle* triangle, const Ray* r, float* t, float3* n)
 {
     // Vertices
-    float3 A = triangle->p1;
-    float3 B = triangle->p2;
-    float3 C = triangle->p3;
+    float3 A = triangle->v1.position;
+    float3 B = triangle->v2.position;
+    float3 C = triangle->v3.position;
 
     // Figure out triangle plane
     float3 triangle_ab = B - A;
@@ -145,12 +146,14 @@ bool RayTriangle(const __global Triangle* triangle, const Ray* r, float* t, floa
     baryC /= triangle_den;
 
     float3 N = normalize(
-        triangle->n1 * baryA + 
-        triangle->n2 * baryB + 
-        triangle->n3 * baryC
+        triangle->v1.normal * baryA +
+        triangle->v2.normal * baryB +
+        triangle->v3.normal * baryC
     );
-    *t = intersection_dist;
-    *n = N;
+
+    //TODO: I have no idea what I'm doing!!!
+    isect->t = intersection_dist;
+    isect->normal = N;
 
     return true;
 }
@@ -311,31 +314,31 @@ float DistributionGGX(float cosTheta, float alpha)
     return alpha2 * INV_PI / pow(cosTheta * cosTheta * (alpha2 - 1.0f) + 1.0f, 2.0f);
 }
 
-float3 SampleBlinn(float3 n, float alpha, unsigned int* seed)
+float3 SampleBlinn(float3 n, float alpha, float* cosTheta, unsigned int* seed)
 {
     float phi = TWO_PI * GetRandomFloat(seed);
-    float cosTheta = pow(GetRandomFloat(seed), 1.0f / (alpha + 1.0f));
-    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+    *cosTheta = pow(GetRandomFloat(seed), 1.0f / (alpha + 1.0f));
+    float sinTheta = sqrt(1.0f - (*cosTheta) * (*cosTheta));
 
     float3 axis = fabs(n.x) > 0.001f ? (float3)(0.0f, 1.0f, 0.0f) : (float3)(1.0f, 0.0f, 0.0f);
     float3 t = normalize(cross(axis, n));
     float3 s = cross(n, t);
 
-    return normalize(s*cos(phi)*sinTheta + t*sin(phi)*sinTheta + n*cosTheta);
+    return normalize(s*cos(phi)*sinTheta + t*sin(phi)*sinTheta + n*(*cosTheta));
 
 }
 
-float3 SampleBeckmann(float3 n, float alpha, unsigned int* seed)
+float3 SampleBeckmann(float3 n, float alpha, float* cosTheta, unsigned int* seed)
 {
     float phi = TWO_PI * GetRandomFloat(seed);
-    float cosTheta = sqrt(1.0f / (1.0f - alpha * alpha * log(GetRandomFloat(seed))));
-    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+    *cosTheta = sqrt(1.0f / (1.0f - alpha * alpha * log(GetRandomFloat(seed))));
+    float sinTheta = sqrt(1.0f - (*cosTheta) * (*cosTheta));
 
     float3 axis = fabs(n.x) > 0.001f ? (float3)(0.0f, 1.0f, 0.0f) : (float3)(1.0f, 0.0f, 0.0f);
     float3 t = normalize(cross(axis, n));
     float3 s = cross(n, t);
 
-    return normalize(s*cos(phi)*sinTheta + t*sin(phi)*sinTheta + n*cosTheta);
+    return normalize(s*cos(phi)*sinTheta + t*sin(phi)*sinTheta + n*(*cosTheta));
 
 }
 
@@ -350,7 +353,7 @@ float3 SampleGGX(float3 n, float alpha, float* cosTheta, unsigned int* seed)
     float3 t = normalize(cross(axis, n));
     float3 s = cross(n, t);
 
-    return normalize(s*cos(phi)*sinTheta + t*sin(phi)*sinTheta + n*(*cosTheta));;
+    return normalize(s*cos(phi)*sinTheta + t*sin(phi)*sinTheta + n*(*cosTheta));
 }
 
 float FresnelShlick(float f0, float nDotWi)
@@ -367,21 +370,28 @@ float3 SampleDiffuse(float3 wo, float3* wi, float* pdf, float3 texcoord, float3 
     return albedo * material->diffuse * INV_PI;
 }
 
-//#define BLINN
+//#define BLINN or #define BECKMANN (or nothing for default kernel)
 float3 SampleSpecular(float3 wo, float3* wi, float* pdf, float3 normal, const __global Material* material, unsigned int* seed)
 {
+    float cosTheta;
+//BLINN & BECKMANN: I have no idea what I'm doing!!!
 #ifdef BLINN
     float alpha = 2.0f / pow(material->roughness, 2.0f) - 2.0f;
-    float3 wh = SampleBlinn(normal, alpha, seed);
+    float3 wh = SampleBlinn(normal, alpha, &cosTheta, seed);
+#elif BECKMANN
+    float alpha = material->roughness;
+    float3 wh = SampleBeckmann(normal, alpha, &cosTheta, seed);
 #else
     float alpha = material->roughness;
-    float cosTheta;
     float3 wh = SampleGGX(normal, alpha, &cosTheta, seed);
 #endif
-        *wi = reflect(wo, wh);
+    *wi = reflect(wo, wh);
     if (dot(*wi, normal) * dot(wo, normal) < 0.0f) return 0.0f;
+    //TODO: Make use of cosTheta for Blinn and Beckmann? I have no idea what I'm doing!!!
 #ifdef BLINN
     float D = DistributionBlinn(normal, wh, alpha);
+#elif BECKMANN
+    float D = DistributionBeckmann(normal, wh, alpha);
 #else
     float D = DistributionGGX(cosTheta, alpha);
 #endif
@@ -481,6 +491,7 @@ Ray CreateRay(uint width, uint height, float3 cameraPos, float3 cameraFront, flo
 
     float3 dir = normalize(x * cross(cameraFront, cameraUp) + y * cameraUp + cameraFront);
 
+#ifdef DOF
     // Simple Depth of Field
     float3 pointAimed = cameraPos + 60.0f * dir;
     //float2 dofDir = (float2)(GetRandomFloat(seed), GetRandomFloat(seed));
@@ -490,7 +501,9 @@ Ray CreateRay(uint width, uint height, float3 cameraPos, float3 cameraFront, flo
     float3 newPos = cameraPos + dofDir.x * r * cross(cameraFront, cameraUp) + dofDir.y * r * cameraUp;
     
     return InitRay(newPos, normalize(pointAimed - newPos));
-    //return InitRay(cameraPos, dir);
+#else
+    return InitRay(cameraPos, dir);
+#endif
 }
 
 #define GAMMA_CORRECTION
