@@ -5,6 +5,7 @@
 #include "renderers/render.hpp"
 #include "utils/cl_exception.hpp"
 #include "io/benchmark_config.hpp"
+#include "kernels/kernel_config.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -18,22 +19,12 @@ int main(int argc, char* argv[])
 
     benchmark_config bm_config(config_file);
 
-    try
-    {
-        render->Init(config_file, bm_config.benchmark_width(), bm_config.benchmark_height());
-    }
-    catch (std::exception& ex)
-    {
-        std::cerr << "Caught exception: " << ex.what() << std::endl;
-        return 0;
-    }
-
     // prepare output file
     std::ofstream of(result_file);
 
     // header
     of << "name" << "\t"
-       <<  noma::bmt::statistics::header_string(false) << "\t"
+       << noma::bmt::statistics::header_string(false) << "\t"
        //<< "kernel_warmups" << "\t"
        << "kernel_runs" << "\t"
        << "width" << "\t"
@@ -46,14 +37,13 @@ int main(int argc, char* argv[])
                     << bm_config.benchmark_width() << "\t"
                     << bm_config.benchmark_height();
 
-    noma::bmt::statistics kernel_stats(bm_config.benchmark_kernel_runs(), 0);
+    const std::vector<kernel_config> kernels_configs = get_configs_to_benchmark();
 
-    for (size_t i = 0; i < bm_config.benchmark_kernel_runs(); ++i)
+    for(auto& kc : kernels_configs)
     {
         try
         {
-            cl_ulong t = render->RenderFrame();
-            kernel_stats.add(noma::bmt::duration(static_cast<noma::bmt::rep>(t)));
+            render->Init(config_file, bm_config.benchmark_width(), bm_config.benchmark_height(), kc.compile_options);
         }
         catch (const std::exception& ex)
         {
@@ -61,21 +51,39 @@ int main(int argc, char* argv[])
             return 0;
         }
 
+        noma::bmt::statistics kernel_stats(bm_config.benchmark_kernel_runs(), 0);
+
+        for (size_t i = 0; i < bm_config.benchmark_kernel_runs(); ++i)
+        {
+            try
+            {
+                cl_ulong t = render->RenderFrame();
+                kernel_stats.add(noma::bmt::duration(static_cast<noma::bmt::rep>(t)));
+            }
+            catch (const std::exception& ex)
+            {
+                std::cerr << "Caught exception: " << ex.what() << std::endl;
+                return 0;
+            }
+
+        }
+
+        // print summary to std::cout
+        std::cout << "Time for '" << kc.name << "' kernel: "
+                  << std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count() << " s"
+                  << ", average frame time: "
+                  << std::chrono::duration_cast<noma::bmt::milliseconds>(kernel_stats.average()).count() << " ms"
+                  << ", frames per second: "
+                  << bm_config.benchmark_kernel_runs() / std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count()
+                  << std::endl;
+
+        // write details into file
+        of << kc.name << '\t'
+           << kernel_stats.string() << '\t'
+           << constant_values.str() << std::endl;
+
+        render->Shutdown();
     }
-
-    // print summary to std::cout
-    std::cout << "Time for default kernel: "
-       << std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count() << " s"
-       << ", average frame time: " << std::chrono::duration_cast<noma::bmt::milliseconds>(kernel_stats.average()).count() << " ms"
-       << ", frames per second: " << bm_config.benchmark_kernel_runs() / std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count()
-       << std::endl;
-
-    // write details into file
-    of << "default" << '\t'
-       << kernel_stats.string() << '\t'
-       << constant_values.str() << std::endl;
-
-    render->Shutdown();
 
     return EXIT_SUCCESS;
 

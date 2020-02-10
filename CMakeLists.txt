@@ -56,6 +56,7 @@ set(SOURCES
     ${SCENE_SOURCES}
     ${UTILS_SOURCES}
     ${MAIN_SOURCES}
+    src/kernels/kernel_config.hpp
 )
 
 add_subdirectory(thirdparty/misc/ ${CMAKE_CURRENT_BINARY_DIR}/build.noma_misc)

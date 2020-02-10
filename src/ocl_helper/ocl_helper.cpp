@@ -16,11 +16,11 @@ OCLHelper::OCLHelper(const std::string config_file)
 
 }
 
-void OCLHelper::CreateProgramFromFile(const std::string kernel_file, const std::string kernel_name)
+void OCLHelper::CreateProgramFromFile(const std::string kernel_file, const std::string kernel_name, const std::string compile_options)
 {
     cl_int err = 0;
 
-    m_Program = m_ocl_helper->create_program_from_file(kernel_file, "", "");
+    m_Program = m_ocl_helper->create_program_from_file(kernel_file, "", compile_options);
     m_Kernel = cl::Kernel(m_Program, kernel_name.c_str(), &err);
     noma::ocl::error_handler(err, "Error creating kernel: '" + kernel_name + "'.");
 

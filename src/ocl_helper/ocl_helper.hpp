@@ -30,7 +30,7 @@ public:
     const cl::Context& GetContext() const { return m_ocl_helper->context(); }
     std::shared_ptr<noma::ocl::helper> GetOCLHelper() const { return m_ocl_helper; }
 
-    void CreateProgramFromFile(const std::string kernel_file, const std::string kernel_name);
+    void CreateProgramFromFile(const std::string kernel_file, const std::string kernel_name, const std::string compile_options);
 
     void SetArgument(RenderKernelArgument_t argIndex, void* data, size_t size);
 

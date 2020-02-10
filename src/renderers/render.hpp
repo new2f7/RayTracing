@@ -14,7 +14,7 @@
 class Render
 {
 public:
-    void         Init(std::string config_file, size_t width, size_t height);
+    void         Init(std::string config_file, size_t width, size_t height, const std::string compile_options);
     cl_ulong     RenderFrame();
     void         Shutdown();
 

@@ -8,10 +8,10 @@
 static Render g_Render;
 Render* render = &g_Render;
 
-void Render::Init(std::string config_file, size_t width, size_t height)
+void Render::Init(std::string config_file, size_t width, size_t height, const std::string compile_options)
 {
     m_OCLHelper = std::make_shared<OCLHelper>(config_file);
-    m_OCLHelper->CreateProgramFromFile("src/kernels/kernel_bvh.cl", "KernelEntry");
+    m_OCLHelper->CreateProgramFromFile("src/kernels/kernel_bvh.cl", "KernelEntry", compile_options);
 
     m_Viewport = std::make_shared<Viewport>(width, height);
     m_Camera = std::make_shared<Camera>();
