@@ -15,7 +15,7 @@ class Render
 {
 public:
     void         Init(std::string config_file, size_t width, size_t height);
-    void         RenderFrame();
+    cl_ulong     RenderFrame();
     void         Shutdown();
 
     double       GetCurtime()        const;

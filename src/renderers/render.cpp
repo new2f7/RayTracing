@@ -64,18 +64,20 @@ unsigned int Render::GetGlobalWorkSize() const
     }
 }
 
-void Render::RenderFrame()
+cl_ulong Render::RenderFrame()
 {
 
     m_Camera->Update();
 
-    m_OCLHelper->RunKernelTimed(GetGlobalWorkSize());
+    cl_ulong t = m_OCLHelper->RunKernelTimed(GetGlobalWorkSize());
 
 #ifdef STORE_BMP
     m_OCLHelper->ReadBuffer(m_OutputBuffer, m_Viewport->pixels, sizeof(float) * 4 * GetGlobalWorkSize());
     std::string filename = "out_" + std::to_string(m_Camera->GetFrameCount()) + ".bmp";
     StoreBMP::Store(filename.c_str(), m_Viewport);
 #endif
+
+    return t;
 }
 
 void Render::Shutdown()
