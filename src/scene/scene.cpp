@@ -94,7 +94,7 @@ void Scene::LoadTriangles(const char* filename)
         }
     }
     
-    std::cout << "Load succesful (" << m_Triangles.size() << " triangles, " << render->GetCurtime() - startTime << "s elapsed)" << std::endl;
+    std::cout << "Load successful (" << m_Triangles.size() << " triangles, " << render->GetCurtime() - startTime << "s elapsed)" << std::endl;
 
 }
 
