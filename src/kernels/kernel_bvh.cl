@@ -481,6 +481,7 @@ Ray CreateRay(uint width, uint height, float3 cameraPos, float3 cameraFront, flo
 
     float3 dir = normalize(x * cross(cameraFront, cameraUp) + y * cameraUp + cameraFront);
 
+#ifdef DOF
     // Simple Depth of Field
     float3 pointAimed = cameraPos + 60.0f * dir;
     //float2 dofDir = (float2)(GetRandomFloat(seed), GetRandomFloat(seed));
@@ -490,7 +491,9 @@ Ray CreateRay(uint width, uint height, float3 cameraPos, float3 cameraFront, flo
     float3 newPos = cameraPos + dofDir.x * r * cross(cameraFront, cameraUp) + dofDir.y * r * cameraUp;
     
     return InitRay(newPos, normalize(pointAimed - newPos));
-    //return InitRay(cameraPos, dir);
+#else
+    return InitRay(cameraPos, dir);
+#endif
 }
 
 #define GAMMA_CORRECTION
