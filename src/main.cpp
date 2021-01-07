@@ -28,10 +28,15 @@ int main(int argc, char* argv[])
         return 0;
     }
 
+    // print config to std::cout
+    std::cout << "kernel_runs: " << bm_config.benchmark_kernel_runs() << std::endl
+              << "width: " << bm_config.benchmark_width() << std::endl
+              << "height: " << bm_config.benchmark_height() << std::endl;
+
     // prepare output file
     std::ofstream of(result_file);
 
-    // header
+    // write header into file
     of << "name" << "\t"
        <<  noma::bmt::statistics::header_string(false) << "\t"
        //<< "kernel_warmups" << "\t"
@@ -64,11 +69,9 @@ int main(int argc, char* argv[])
     }
 
     // print summary to std::cout
-    std::cout << "Time for default kernel: "
-       << std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count() << " s"
-       << ", average frame time: " << std::chrono::duration_cast<noma::bmt::milliseconds>(kernel_stats.average()).count() << " ms"
-       << ", frames per second: " << bm_config.benchmark_kernel_runs() / std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count()
-       << std::endl;
+    std::cout << "Time for default kernel: " << std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count() << " s, "
+              << "average frame time: " << std::chrono::duration_cast<noma::bmt::milliseconds>(kernel_stats.average()).count() << " ms, "
+              << "frames per second: " << bm_config.benchmark_kernel_runs() / std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count() << std::endl;
 
     // write details into file
     of << "default" << '\t'
