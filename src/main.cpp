@@ -69,12 +69,12 @@ int main(int argc, char* argv[])
     }
 
     // print summary to std::cout
-    std::cout << "Time for default kernel: " << std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count() << " s, "
+    std::cout << "Time for kernel_bvh: " << std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count() << " s, "
               << "average frame time: " << std::chrono::duration_cast<noma::bmt::milliseconds>(kernel_stats.average()).count() << " ms, "
               << "frames per second: " << bm_config.benchmark_kernel_runs() / std::chrono::duration_cast<noma::bmt::seconds>(kernel_stats.sum()).count() << std::endl;
 
     // write details into file
-    of << "default" << '\t'
+    of << "kernel_bvh" << '\t'
        << kernel_stats.string() << '\t'
        << constant_values.str() << std::endl;
 
