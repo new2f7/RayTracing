@@ -214,8 +214,7 @@ BVHScene::BVHScene(const char* filename, unsigned int maxPrimitivesInNode)
     m_Triangles.swap(orderedTriangles);
 
     //primitiveInfo.resize(0);
-    std::cout << "BVH created with " << totalNodes << " nodes for " << m_Triangles.size()
-        << " triangles ("<< float(totalNodes * sizeof(BVHBuildNode)) / (1024.0f * 1024.0f) << " MB, " << render->GetCurtime() - startTime << "s elapsed)" << std::endl;
+    std::cout << "BVH created with " << totalNodes << " nodes for " << m_Triangles.size() << " triangles ("<< float(totalNodes * sizeof(BVHBuildNode)) / (1024.0f * 1024.0f) << " MiB, " << render->GetCurtime() - startTime << "s elapsed)" << std::endl;
 
     // Compute representation of depth-first traversal of BVH tree
     m_Nodes.resize(totalNodes);
@@ -230,6 +229,7 @@ void BVHScene::SetupBuffers()
     cl_int errCode;
 
     m_TriangleBuffer = cl::Buffer(render->GetOCLHelper()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Triangles.size() * sizeof(Triangle), m_Triangles.data(), &errCode);
+    std::cout << "TriangleBuffer size: " << float(m_Triangles.size() * sizeof(Triangle)) / (1024.0f * 1024.0f) << " MiB" << std::endl;
     if (errCode)
     {
         throw CLException("Failed to create scene buffer", errCode);
@@ -238,6 +238,7 @@ void BVHScene::SetupBuffers()
     render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::BUFFER_SCENE, &m_TriangleBuffer, sizeof(cl::Buffer));
 
     m_NodeBuffer = cl::Buffer(render->GetOCLHelper()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Nodes.size() * sizeof(LinearBVHNode), m_Nodes.data(), &errCode);
+    std::cout << "NodeBuffer size: " << float(m_Nodes.size() * sizeof(LinearBVHNode)) / (1024.0f * 1024.0f) << " MiB" << std::endl;
     if (errCode)
     {
         throw CLException("Failed to create BVH node buffer", errCode);
@@ -246,6 +247,7 @@ void BVHScene::SetupBuffers()
     render->GetOCLHelper()->SetArgument(RenderKernelArgument_t::BUFFER_NODE, &m_NodeBuffer, sizeof(cl::Buffer));
 
     m_MaterialBuffer = cl::Buffer(render->GetOCLHelper()->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, m_Materials.size() * sizeof(Material), m_Materials.data(), &errCode);
+    std::cout << "MaterialBuffer size: " << m_Materials.size() * sizeof(Material) << " Bytes" << std::endl;
     if (errCode)
     {
         throw CLException("Failed to create material buffer", errCode);

@@ -27,6 +27,7 @@ void Render::SetupBuffers()
     m_OCLHelper->SetArgument(RenderKernelArgument_t::HEIGHT, &m_Viewport->height, sizeof(unsigned int));
 
     m_OutputBuffer = m_OCLHelper->GetOCLHelper()->create_buffer(CL_MEM_READ_WRITE, GetGlobalWorkSize() * sizeof(float) * 4);
+    std::cout << "OutputBuffer size: " << float(GetGlobalWorkSize() * sizeof(float) * 4) / (1024.0f * 1024.0f) << " MiB" << std::endl;
     m_OCLHelper->SetArgument(RenderKernelArgument_t::BUFFER_OUT, &m_OutputBuffer, sizeof(cl::Buffer));
     
     m_Scene->SetupBuffers();
@@ -41,6 +42,7 @@ void Render::SetupBuffers()
 
     cl_int errCode;
     m_Texture0 = cl::Image2D(m_OCLHelper->GetContext(), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, imageFormat, image.width, image.height, 0, image.colors, &errCode);
+    std::cout << "Texture0 size: " << float(image.width * image.height * sizeof(float) * 4) / (1024.0f * 1024.0f) << " MiB" << std::endl;
     noma::ocl::error_handler(errCode, "Failed to create image");
 
     m_OCLHelper->SetArgument(RenderKernelArgument_t::TEXTURE0, &m_Texture0, sizeof(cl::Image2D));
